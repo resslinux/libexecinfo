@@ -34,19 +34,19 @@ EXECINFO_LDFLAGS=$(LDFLAGS)
 INCLUDEDIR ?= /usr/include
 LIBDIR ?= /usr/lib
 
-all: static dynamic
+all: libexecinfo.a libexecinfo.so.1
 
-static:
+libexecinfo.a:
 	$(CC) $(EXECINFO_CFLAGS) $(EXECINFO_LDFLAGS) stacktraverse.c
 	$(CC) $(EXECINFO_CFLAGS) $(EXECINFO_LDFLAGS) execinfo.c
 	$(AR) rcs libexecinfo.a stacktraverse.o execinfo.o
 
-dynamic:
+libexecinfo.so.1:
 	$(CC) -fpic -DPIC $(EXECINFO_CFLAGS) $(EXECINFO_LDFLAGS) stacktraverse.c -o stacktraverse.So
 	$(CC) -fpic -DPIC $(EXECINFO_CFLAGS) $(EXECINFO_LDFLAGS) execinfo.c -o execinfo.So
 	$(CC) -shared -Wl,-soname,libexecinfo.so.1 -o libexecinfo.so.1 stacktraverse.So execinfo.So
 
-install: all
+install: libexecinfo.a libexecinfo.so.1
 	install -d $(DESTDIR)$(INCLUDEDIR)
 	install -m 755 execinfo.h       $(DESTDIR)$(INCLUDEDIR)
 	install -m 755 stacktraverse.h  $(DESTDIR)$(INCLUDEDIR)
@@ -55,6 +55,10 @@ install: all
 	install -m 755 libexecinfo.a    $(DESTDIR)$(LIBDIR)
 	install -m 755 libexecinfo.so.1 $(DESTDIR)$(LIBDIR)
 	
-	ln -s /usr/lib/libexecinfo.so.1 $(DESTDIR)$(LIBDIR)
+	ln -s /usr/lib/libexecinfo.so.1 $(DESTDIR)$(LIBDIR)/libexecinfo.so
 clean:
-	rm -rf *.o *.So *.a *.so
+	rm -rf *.o *.So *.a *.so *.so.1
+
+.PHONY: all
+.PHONY: install
+.PHONY: clean
